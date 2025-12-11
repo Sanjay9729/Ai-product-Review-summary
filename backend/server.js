@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import 'dotenv/config';
 
 // Import database and controllers
-import { connectToDatabase } from '../database/mongoConnection.js';
+import { connectToDatabase } from './database/mongoConnection.js';
 import productRoutes from './routes/productRoutes.js';
 
 const app = express();
