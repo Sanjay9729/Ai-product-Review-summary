@@ -1,0 +1,15 @@
+name = "ai-product-summary"
+
+uid = "a28b4783-0284-eb6a-6a9c-ce60facec00d368a0f78"
+
+type = "theme_app_extension"
+
+[extension_points]
+
+[[extension_points.blocks]]
+name = "Product AI Summary"
+type = "ai-summary"
+
+[[extension_points.blocks]]
+name = "AI Reviews Summary"
+type = "ai-review-summary"

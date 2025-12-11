@@ -1,0 +1,101 @@
+  {% comment %}
+    AI Product Summary Block
+    Displays AI-generated product summary from MongoDB
+  {% endcomment %}
+
+  <style>
+    .ai-summary-block {
+      margin: 20px 0;
+      padding: 20px;
+    }
+
+    .ai-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #9c6ade;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-summary-icon {
+      font-size: 18px;
+    }
+
+    .ai-summary-content {
+      color: #4a5568;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .ai-summary-loading {
+      color: #9c6ade;
+      font-style: italic;
+    }
+
+    .ai-summary-error {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .ai-summary-block {
+        padding: 16px;
+      }
+
+      .ai-summary-content {
+        font-size: 14px;
+      }
+    }
+  </style>
+
+  <div class="ai-summary-block" id="ai-summary-{{ product.id }}" data-product-title="{{ product.title | escape }}">
+    <div class="ai-summary-header">
+      <span class="ai-summary-icon">✨</span>
+      <span>AI Summary</span>
+    </div>
+    <div class="ai-summary-content ai-summary-loading">
+      Loading AI summary...
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const productTitle = "{{ product.title | escape }}";
+      const summaryBlock = document.getElementById('ai-summary-{{ product.id }}');
+      const contentDiv = summaryBlock.querySelector('.ai-summary-content');
+
+      // Fetch AI summary from your app
+      fetch(`/apps/ai-summary?product=${encodeURIComponent(productTitle)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.summary) {
+            contentDiv.textContent = data.summary;
+            contentDiv.classList.remove('ai-summary-loading');
+          } else {
+            // Hide the block if no summary exists
+            summaryBlock.style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading AI summary:', error);
+          // Hide the block on error
+          summaryBlock.style.display = 'none';
+        });
+    })();
+  </script>
+
+  {% schema %}
+  {
+    "name": "Product AI Summary",
+    "target": "section",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Displays AI-generated product summary from your MongoDB database. The summary is automatically fetched based on the product title."
+      }
+    ]
+  }
+  {% endschema %}
