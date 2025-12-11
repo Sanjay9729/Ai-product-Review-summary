@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../database/mongoConnection.js';
-import Product from '../../database/Product.js';
+import { connectToDatabase } from '../database/mongoConnection.js';
+import Product from '../database/Product.js';
 
 async function syncProductsFromShopify(admin) {
   try {

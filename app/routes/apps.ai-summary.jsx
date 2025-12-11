@@ -81,7 +81,7 @@
  * Called from theme as:  /apps/ai-summary?product=PRODUCT_TITLE
  */
 
-import { connectToDatabase } from "../../database/mongoConnection.js";
+import { connectToDatabase } from "../../backend/database/mongoConnection.js";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);

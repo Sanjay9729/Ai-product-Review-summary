@@ -282,8 +282,8 @@
 
 // backend/services/reviewSummaryService.js
 import Groq from "groq-sdk";
-import { connectToDatabase } from "../../database/mongoConnection.js";
-import ReviewSummary from "../../database/ReviewSummary.js";
+import { connectToDatabase } from "../database/mongoConnection.js";
+import ReviewSummary from "../database/ReviewSummary.js";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
