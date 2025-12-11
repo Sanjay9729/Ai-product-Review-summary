@@ -97,7 +97,7 @@ class JudgeMeScraper {
   }
 
   /**
-   * Scrape reviews for a specific product and format them
+   * Scrape reviews for a specific product
    */
   async scrapeProductReviews(productId, productName, limit = 50) {
     try {
