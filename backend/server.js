@@ -1,3 +1,54 @@
+// import express from 'express';
+// import cors from 'cors';
+// import morgan from 'morgan';
+// import bodyParser from 'body-parser';
+// import 'dotenv/config';
+
+// // Import database and controllers
+// import { connectToDatabase } from './database/mongoConnection.js';
+// import productRoutes from './routes/productRoutes.js';
+
+// const app = express();
+// const PORT = process.env.PORT || 3001;
+
+// // Middleware
+// app.use(cors());
+// app.use(morgan('dev'));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+// // Connect to MongoDB
+// await connectToDatabase();
+
+// // API Routes
+// app.use('/api/products', productRoutes);
+
+// // Health check endpoint
+// app.get('/api/health', (req, res) => {
+//   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+// });
+
+// // Error handling middleware
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).json({ 
+//     success: false, 
+//     error: 'Something went wrong!',
+//     message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+//   });
+// });
+
+// // Start server
+// app.listen(PORT, () => {
+//   console.log(`🚀 Backend server running on port ${PORT}`);
+//   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+// });
+
+// export default app;
+
+
+
+// server.js
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -9,7 +60,7 @@ import { connectToDatabase } from './database/mongoConnection.js';
 import productRoutes from './routes/productRoutes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 // Middleware
 app.use(cors());
@@ -17,10 +68,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Connect to MongoDB
-await connectToDatabase();
-
-// API Routes
+// API Routes (define before server start)
 app.use('/api/products', productRoutes);
 
 // Health check endpoint
@@ -30,18 +78,84 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
+  console.error('Express error handler:', err);
+  res.status(500).json({
+    success: false,
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Backend server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+// Helper: graceful shutdown
+const shutdown = (signal) => {
+  return async (code) => {
+    console.log(`\nReceived ${signal}. Shutting down (code: ${code})...`);
+    try {
+      // If your DB driver exposes a close/disconnect, call it here
+      if (typeof global.__MONGO_CLIENT__?.close === 'function') {
+        await global.__MONGO_CLIENT__.close();
+        console.log('Closed Mongo client.');
+      }
+    } catch (e) {
+      console.warn('Error while closing resources', e);
+    } finally {
+      process.exit(code ?? 0);
+    }
+  };
+};
+
+// Start-up function with defensive checks
+async function start() {
+  try {
+    console.log('Starting server.js', {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: PORT,
+      MONGO_URI_present: Boolean(process.env.MONGO_URI || process.env.DATABASE_URL)
+    });
+
+    // Fail fast with clear message if DB URL missing
+    const mongoUri = process.env.MONGO_URI || process.env.DATABASE_URL;
+    if (!mongoUri) {
+      console.error('Missing Mongo connection string. Please set MONGO_URI or DATABASE_URL env var.');
+      process.exit(1);
+    }
+
+    // Connect to MongoDB with try/catch inside start to surface errors
+    await connectToDatabase(); // ensure connectToDatabase throws on error
+    console.log('✅ MongoDB connected');
+
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Backend server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    });
+
+    // Optional: keep server reference for graceful shutdown
+    process.on('SIGINT', shutdown('SIGINT'));
+    process.on('SIGTERM', shutdown('SIGTERM'));
+    server.on('error', (err) => {
+      console.error('Server encountered an error:', err);
+      process.exit(1);
+    });
+  } catch (err) {
+    // Top-level startup error => log full stack and exit with non-zero
+    console.error('Startup error:', err);
+    process.exit(1);
+  }
+}
+
+// Global process-level handlers to capture any leaked errors
+process.on('uncaughtException', (err) => {
+  console.error('uncaughtException:', err);
+  // give logs a moment then exit
+  setTimeout(() => process.exit(1), 100);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('unhandledRejection at:', promise, 'reason:', reason);
+  setTimeout(() => process.exit(1), 100);
 });
 
+// Start the app
+start();
+
+// Export app for testing (same as before)
 export default app;
