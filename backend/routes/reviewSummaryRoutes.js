@@ -48,7 +48,7 @@ router.get('/generate/:productId', async (req, res) => {
 });
 
 // POST /api/review-summaries/generate-all - Generate summaries for all products
-router.post('/generate-all', async (req, res) => {
+router.get('/generate-all', async (req, res) => {
   try {
     await generateAllSummaries(req, res);
     // The controller already sends the response
