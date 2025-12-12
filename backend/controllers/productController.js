@@ -3,9 +3,27 @@ import Product from '../database/Product.js';
 
 async function syncProductsFromShopify(admin) {
   try {
+    console.log('Starting product sync from Shopify...');
+    
+    // Check if admin context is available
+    if (!admin) {
+      throw new Error('Admin context not provided. Please ensure you are authenticated.');
+    }
+
     // Fetch real products from Shopify store
+    console.log('Connecting to database...');
     const db = await connectToDatabase();
+    
+    if (!db) {
+      throw new Error('Failed to connect to database. Please check your MongoDB configuration.');
+    }
+    
+    console.log('Getting products collection...');
     const productsCollection = db.collection('products');
+    
+    if (!productsCollection) {
+      throw new Error('Failed to access products collection in database.');
+    }
 
     console.log('Syncing products from your Shopify store...');
 
@@ -21,28 +39,59 @@ async function syncProductsFromShopify(admin) {
       };
     }
 
+    console.log(`Found ${shopifyProducts.length} products from Shopify. Clearing existing products...`);
+    
     // Clear existing products
-    await productsCollection.deleteMany({});
+    const deleteResult = await productsCollection.deleteMany({});
+    console.log(`Deleted ${deleteResult.deletedCount} existing products`);
 
     // Convert Shopify products to our format using the existing Product.fromShopifyProduct method
+    console.log('Converting products to database format...');
     const productDocuments = shopifyProducts.map(shopifyProduct => {
-      return new Product(Product.fromShopifyProduct(shopifyProduct)).toJSON();
-    });
+      try {
+        return new Product(Product.fromShopifyProduct(shopifyProduct)).toJSON();
+      } catch (error) {
+        console.error('Error converting product:', error.message);
+        return null;
+      }
+    }).filter(product => product !== null);
 
+    if (productDocuments.length === 0) {
+      throw new Error('No valid products could be processed from Shopify data.');
+    }
+
+    console.log(`Inserting ${productDocuments.length} products into database...`);
     // Insert the products
-    await productsCollection.insertMany(productDocuments);
+    const insertResult = await productsCollection.insertMany(productDocuments);
+    
+    console.log(`Successfully inserted ${insertResult.insertedCount} products`);
 
     return {
       success: true,
-      message: `Successfully synced ${productDocuments.length} products from your Shopify store`,
-      count: productDocuments.length
+      message: `Successfully synced ${insertResult.insertedCount} products from your Shopify store`,
+      count: insertResult.insertedCount
     };
 
   } catch (error) {
     console.error('Error syncing products:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = error.message;
+    if (error.message.includes('collection')) {
+      errorMessage = 'Database collection error: ' + errorMessage;
+    } else if (error.message.includes('connect')) {
+      errorMessage = 'Database connection error: ' + errorMessage;
+    } else if (error.message.includes('authenticate')) {
+      errorMessage = 'Authentication error: ' + errorMessage;
+    }
+    
     return {
       success: false,
-      error: error.message
+      error: errorMessage,
+      details: {
+        timestamp: new Date().toISOString(),
+        errorType: error.constructor.name
+      }
     };
   }
 }
