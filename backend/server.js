@@ -48,6 +48,7 @@
 
 
 
+
 // server.js
 import express from 'express';
 import cors from 'cors';
@@ -58,6 +59,7 @@ import 'dotenv/config';
 // Import database and controllers
 import { connectToDatabase } from './database/mongoConnection.js';
 import productRoutes from './routes/productRoutes.js';
+import reviewSummaryRoutes from './routes/reviewSummaryRoutes.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -70,6 +72,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // API Routes (define before server start)
 app.use('/api/products', productRoutes);
+app.use('/api/review-summaries', reviewSummaryRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
