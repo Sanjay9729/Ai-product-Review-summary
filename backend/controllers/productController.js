@@ -160,6 +160,12 @@ async function fetchShopifyProducts(admin) {
     );
 
     const data = await response.json();
+    
+    // Check for GraphQL errors
+    if (data.errors) {
+      console.error('Shopify GraphQL Errors:', JSON.stringify(data.errors, null, 2));
+      throw new Error(`Shopify GraphQL Error: ${data.errors.map(e => e.message).join(', ')}`);
+    }
 
     if (!data || !data.data || !data.data.products) {
       console.log('No products data received from Shopify');
