@@ -86,11 +86,21 @@ export async function connectToDatabase() {
     } catch (error) {
       console.error('Connection failed, creating mock database...');
       
-      // Final fallback: Mock database
+      // Final fallback: Mock database with proper cursor chain
+      const createMockCursor = () => {
+        const cursor = {
+          sort: (spec) => cursor,
+          skip: (count) => cursor,
+          limit: (count) => cursor,
+          toArray: () => Promise.resolve([])
+        };
+        return cursor;
+      };
+      
       db = {
         databaseName: 'mock-database',
         collection: (name) => ({
-          find: () => ({ toArray: () => Promise.resolve([]) }),
+          find: (query) => createMockCursor(),
           findOne: () => Promise.resolve(null),
           insertOne: (doc) => Promise.resolve({ insertedId: `mock-${Date.now()}` }),
           insertMany: (docs) => Promise.resolve({ insertedCount: docs.length }),
