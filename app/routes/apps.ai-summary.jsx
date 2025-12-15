@@ -102,8 +102,8 @@ export const loader = async ({ request }) => {
   try {
     const db = await connectToDatabase();
 
-    // ✅ This is where your Groq Judge.me AI summaries are stored
-    const summariesCollection = db.collection("review_summaries");
+    // ✅ This is where your product AI summaries are stored
+    const summariesCollection = db.collection("product_summaries");
 
     // Case-insensitive match on productName
     const summaryDoc = await summariesCollection.findOne({
@@ -114,7 +114,7 @@ export const loader = async ({ request }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "No AI review summary found for this product",
+          message: "No AI product summary found for this product",
         }),
         {
           status: 200,
@@ -143,7 +143,7 @@ export const loader = async ({ request }) => {
       }
     );
   } catch (error) {
-    console.error("Error fetching AI Judge.me review summary:", error);
+    console.error("Error fetching AI product summary:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {

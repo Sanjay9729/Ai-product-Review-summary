@@ -1,14 +1,15 @@
 // routes/api.summaries.jsx
 /**
- * API route for AI summary operations
+ * API route for AI product summary operations (product_summaries collection)
+ * This generates summaries based on product descriptions, features, etc.
  */
 
 import { authenticate } from "../shopify.server.js";
 import {
-  generateReviewSummariesForAllProducts,
-  generateReviewSummaryForProduct,
-  getReviewSummaries,
-} from "../../backend/services/reviewSummaryService.js";
+  generateProductSummaryForAllProducts,
+  generateProductSummaryForProduct,
+  getProductSummaries,
+} from "../../backend/services/productSummaryService.js";
 
 export const loader = async ({ request }) => {
   try {
@@ -20,7 +21,7 @@ export const loader = async ({ request }) => {
     const limit = parseInt(url.searchParams.get("limit") || "20", 10);
 
     if (intent === "get-summaries") {
-      const result = await getReviewSummaries(limit, page);
+      const result = await getProductSummaries(limit, page);
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 500,
         headers: { "Content-Type": "application/json" },
@@ -74,7 +75,7 @@ export const action = async ({ request }) => {
     const { intent, productId, page, limit } = body || {};
 
     if (intent === "generate-all-summaries") {
-      const result = await generateReviewSummariesForAllProducts();
+      const result = await generateProductSummaryForAllProducts();
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 500,
         headers: { "Content-Type": "application/json" },
@@ -95,7 +96,7 @@ export const action = async ({ request }) => {
         );
       }
 
-      const result = await generateReviewSummaryForProduct(productId);
+      const result = await generateProductSummaryForProduct(productId);
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 500,
         headers: { "Content-Type": "application/json" },
@@ -105,7 +106,7 @@ export const action = async ({ request }) => {
     if (intent === "get-summaries") {
       const pageNum = parseInt(page || "1", 10);
       const limitNum = parseInt(limit || "20", 10);
-      const result = await getReviewSummaries(limitNum, pageNum);
+      const result = await getProductSummaries(limitNum, pageNum);
       return new Response(JSON.stringify(result), {
         status: result.success ? 200 : 500,
         headers: { "Content-Type": "application/json" },

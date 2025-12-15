@@ -1,25 +1,26 @@
-import { ObjectId } from 'mongodb';
+// backend/database/ProductSummary.js
+import { ObjectId } from "mongodb";
 
-export default class ProductSummary {
-  constructor(data) {
-    this._id = data._id || new ObjectId();
-    this.productId = data.productId; // Reference to product _id
-    this.productName = data.productName;
-    this.originalDescription = data.originalDescription;
-    this.aiSummary = data.aiSummary;
-    this.createdAt = data.createdAt || new Date();
-    this.updatedAt = data.updatedAt || new Date();
-  }
+/**
+ * Product Summary Model
+ * One AI-generated summary per product
+ */
 
-  static fromProduct(product, aiSummary) {
-    return new ProductSummary({
-      productId: product._id,
-      productName: product.title,
-      originalDescription: product.bodyHtml,
-      aiSummary: aiSummary,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+class ProductSummary {
+  constructor({
+    _id,
+    productId,
+    productName,
+    summary,
+    createdAt,
+    updatedAt,
+  }) {
+    this._id = _id || new ObjectId();
+    this.productId = productId;
+    this.productName = productName;
+    this.summary = summary;
+    this.createdAt = createdAt || new Date();
+    this.updatedAt = updatedAt || new Date();
   }
 
   toJSON() {
@@ -27,10 +28,23 @@ export default class ProductSummary {
       _id: this._id,
       productId: this.productId,
       productName: this.productName,
-      originalDescription: this.originalDescription,
-      aiSummary: this.aiSummary,
+      summary: this.summary,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     };
   }
+
+  isValid() {
+    if (!this.productId) {
+      console.error("ProductSummary validation failed: productId is required");
+      return false;
+    }
+    if (!this.summary || this.summary.trim().length === 0) {
+      console.error("ProductSummary validation failed: summary is required");
+      return false;
+    }
+    return true;
+  }
 }
+
+export default ProductSummary;
