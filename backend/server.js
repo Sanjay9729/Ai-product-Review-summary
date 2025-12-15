@@ -143,7 +143,7 @@ const shutdown = (signal) => {
       console.warn('Error while closing resources', e);
     } finally {
       process.exit(code ?? 0);
-    }
+    };
   };
 };
 

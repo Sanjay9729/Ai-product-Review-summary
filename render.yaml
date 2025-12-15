@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ai-product-review-summary
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && echo "Backend dependencies installed"
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: DATABASE_URL
+        sync: false
