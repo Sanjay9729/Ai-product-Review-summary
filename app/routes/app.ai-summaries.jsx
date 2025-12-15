@@ -17,7 +17,7 @@ export const action = async ({ request }) => {
   try {
     if (intent === "generate-summaries") {
       // Call the API to generate summaries for all products
-      const response = await fetch('/api/summaries', {
+      const response = await fetch('http://localhost:3001/api/summaries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default function AISummaries() {
   const loadSummaries = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/summaries?intent=get-summaries&page=${page}&limit=20`);
+      const response = await fetch(`http://localhost:3001/api/summaries?intent=get-summaries&page=${page}&limit=20`);
 
       if (response.ok) {
         const result = await response.json();
@@ -102,7 +102,7 @@ export default function AISummaries() {
 
   const generateSummaryForProduct = async (productId) => {
     try {
-      const response = await fetch('/api/summaries', {
+      const response = await fetch('http://localhost:3001/api/summaries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ export default function AISummaries() {
                           </s-text>
                         </s-stack>
                         <s-text>
-                          {summary.aiSummary}
+                          {summary.summary}
                         </s-text>
                       </s-stack>
                     </s-box>

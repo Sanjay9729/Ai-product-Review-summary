@@ -2,7 +2,8 @@
 import { 
   getReviewSummaries, 
   generateReviewSummaryForProduct, 
-  generateReviewSummariesForAllProducts 
+  generateReviewSummariesForAllProducts,
+  getReviewSummaryByProductId
 } from '../services/reviewSummaryService.js';
 
 /**
@@ -50,6 +51,31 @@ async function generateSummaryForProduct(req, res) {
 }
 
 /**
+ * Get summary for a specific product by ID
+ */
+async function getReviewSummaryByProductIdController(req, res) {
+  try {
+    const { productId } = req.params;
+    
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      });
+    }
+    
+    const result = await getReviewSummaryByProductId(productId);
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching review summary:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+}
+
+/**
  * Generate summaries for all products that have reviews
  */
 async function generateAllSummaries(req, res) {
@@ -68,5 +94,6 @@ async function generateAllSummaries(req, res) {
 export {
   getAllReviewSummaries,
   generateSummaryForProduct,
-  generateAllSummaries
+  generateAllSummaries,
+  getReviewSummaryByProductIdController
 };

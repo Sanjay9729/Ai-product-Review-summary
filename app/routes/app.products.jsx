@@ -17,7 +17,8 @@ export const action = async ({ request }) => {
   if (intent === "sync-products") {
     try {
       // Call the backend Express API directly
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(
+  `${process.env.BACKEND_API_URL}/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

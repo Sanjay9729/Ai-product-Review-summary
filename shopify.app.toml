@@ -2,7 +2,7 @@
 
 client_id = "f4f29b4328d3a51313523e8dd98c5d7b"
 name = "Testing app"
-application_url = "https://example.com"
+application_url = "https://ai-product-review-summary.onrender.com"
 embedded = true
 
 [build]
@@ -24,9 +24,9 @@ api_version = "2026-01"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://ai-product-review-summary.onrender.com/api/auth" ]
 
 [app_proxy]
-url = "https://example.com/apps/ai-review-summary"
+url = "https://ai-product-review-summary.onrender.com/apps/ai-review-summary"
 subpath = "ai-review-summary"
 prefix = "apps"

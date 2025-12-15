@@ -68,7 +68,7 @@
       const contentDiv = summaryBlock.querySelector('.ai-summary-content');
 
       // Fetch AI summary from your app
-      fetch(`/apps/ai-summary?product=${encodeURIComponent(productTitle)}`)
+      fetch(`/apps/ai-review-summary?type=summary&product=${encodeURIComponent(productTitle)}`)
         .then(response => response.json())
         .then(data => {
           if (data.success && data.summary) {

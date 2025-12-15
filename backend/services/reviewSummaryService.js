@@ -62,8 +62,7 @@
 
 // """ 
 // ${reviewsText}
-// """
-// `;
+// """`;
 
 //   const completion = await groq.chat.completions.create({
 //     model: GROQ_MODEL,
@@ -423,7 +422,7 @@ export async function generateReviewSummaryForProduct(productId) {
   }
 
   const summaryData = summaryModel.toJSON();
-  const { createdAt, updatedAt, ...dataToSave } = summaryData;
+  const { _id, createdAt, updatedAt, ...dataToSave } = summaryData;
 
   await summariesCollection.updateOne(
     { productId },
@@ -531,6 +530,39 @@ export async function getReviewSummaries(limit = 20, page = 1) {
       success: false,
       error: error.message,
       summaries: [],
+    };
+  }
+}
+
+/**
+ * Get single review summary by product ID
+ */
+export async function getReviewSummaryByProductId(productId) {
+  try {
+    const db = await connectToDatabase();
+    const summariesCollection = db.collection("review_summaries");
+
+    const summary = await summariesCollection.findOne({ productId });
+
+    if (!summary) {
+      return {
+        success: false,
+        error: "Review summary not found for this product",
+        found: false,
+      };
+    }
+
+    return {
+      success: true,
+      summary,
+      found: true,
+    };
+  } catch (error) {
+    console.error("Error fetching review summary:", error);
+    return {
+      success: false,
+      error: error.message,
+      found: false,
     };
   }
 }
