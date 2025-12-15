@@ -83,6 +83,42 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint to check environment and database
+app.get('/api/debug', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const productsCount = await db.collection('products').countDocuments({});
+    const sampleProduct = await db.collection('products').findOne({});
+
+    res.json({
+      status: 'OK',
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        HAS_MONGODB_URI: !!process.env.MONGODB_URI,
+        HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+        HAS_MONGO_URI: !!process.env.MONGO_URI,
+        MONGODB_URI_LENGTH: process.env.MONGODB_URI?.length || 0,
+        MONGODB_URI_PREVIEW: process.env.MONGODB_URI?.substring(0, 50) + '...' || 'NOT SET',
+      },
+      database: {
+        connected: !!db,
+        databaseName: db?.databaseName,
+        productsCount,
+        hasSampleProduct: !!sampleProduct,
+        sampleProductTitle: sampleProduct?.title || 'No products found'
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Express error handler:', err);
