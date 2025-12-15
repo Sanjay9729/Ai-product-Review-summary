@@ -78,6 +78,13 @@ app.use('/api/review-summaries', reviewSummaryRoutes);
 app.use('/api/summaries', summaryRoutes);
 app.use('/api/product-summaries', productSummaryRoutes);
 
+
+// Root route (Welcome message)
+app.get('/', (_, res) => {  // Use `_` to indicate unused parameter
+  res.send('Welcome to the AI Product Review Summary Service!');
+});
+
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
