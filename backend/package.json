@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo 'No build needed for backend'",
+    "build": "npm ci && echo 'Backend dependencies installed successfully'",
+    "prebuild": "npm install",
     "start": "node server.js"
   },
   "keywords": [],
