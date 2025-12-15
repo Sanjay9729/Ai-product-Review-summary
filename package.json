@@ -2,7 +2,7 @@
   "name": "testing-app",
   "private": true,
   "scripts": {
-    "build": "react-router build",
+    "build": "vite build",
     "dev": "shopify app dev",
     "backend": "node backend/server.js",
     "config:link": "shopify app config link",
