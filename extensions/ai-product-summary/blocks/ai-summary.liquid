@@ -40,12 +40,47 @@
       display: none;
     }
 
+    .ai-suggestions-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .ai-suggestions-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #9c6ade;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-suggestions-icon {
+      font-size: 18px;
+    }
+
+    .ai-suggestions-content {
+      color: #4a5568;
+      line-height: 1.6;
+      font-size: 15px;
+      white-space: pre-wrap;
+    }
+
+    .ai-suggestions-loading {
+      color: #9c6ade;
+      font-style: italic;
+    }
+
     @media (max-width: 768px) {
       .ai-summary-block {
         padding: 16px;
       }
 
-      .ai-summary-content {
+      .ai-summary-content,
+      .ai-suggestions-content {
         font-size: 14px;
       }
     }
@@ -59,6 +94,15 @@
     <div class="ai-summary-content ai-summary-loading">
       Loading AI summary...
     </div>
+    <div class="ai-suggestions-section" id="ai-suggestions-{{ product.id }}" style="display: none;">
+      <div class="ai-suggestions-header">
+        <span class="ai-suggestions-icon">💡</span>
+        <span>Suggestions</span>
+      </div>
+      <div class="ai-suggestions-content ai-suggestions-loading">
+        Loading suggestions...
+      </div>
+    </div>
   </div>
 
   <script>
@@ -66,21 +110,75 @@
       const productTitle = "{{ product.title | escape }}";
       const summaryBlock = document.getElementById('ai-summary-{{ product.id }}');
       const contentDiv = summaryBlock.querySelector('.ai-summary-content');
+      const suggestionsSection = document.getElementById('ai-suggestions-{{ product.id }}');
+      const suggestionsContent = suggestionsSection.querySelector('.ai-suggestions-content');
+
+      console.log('[AI Summary] Fetching data for product:', productTitle);
 
       // Fetch AI summary from your app
       fetch(`/apps/ai-review-summary?type=summary&product=${encodeURIComponent(productTitle)}`)
-        .then(response => response.json())
+        .then(response => {
+          console.log('[AI Summary] Response status:', response.status);
+          return response.json();
+        })
         .then(data => {
+          console.log('[AI Summary] Received data:', data);
+
           if (data.success && data.summary) {
+            console.log('[AI Summary] Summary found:', data.summary);
             contentDiv.textContent = data.summary;
             contentDiv.classList.remove('ai-summary-loading');
+
+            // Display suggestions if available
+            if (data.suggestions) {
+              console.log('[AI Summary] Suggestions found:', data.suggestions);
+
+              // Extract "best suited for" section
+              let shortSuggestions = data.suggestions;
+
+              // Try to extract the first point about "best suited for"
+              const bestSuitedMatch = data.suggestions.match(/\*\*1\.\s*What type of user\/customer[^:]*:\*\*\s*([^*]+)/i);
+              if (bestSuitedMatch && bestSuitedMatch[1]) {
+                // Get the text and clean it up
+                let extracted = bestSuitedMatch[1].trim();
+
+                // Find the end of the first complete sentence (before the next section)
+                const sentences = extracted.split(/\.\s+/);
+                if (sentences.length > 0) {
+                  // Take first 2-3 sentences to make it concise but complete
+                  shortSuggestions = sentences.slice(0, 2).join('. ').trim();
+                  // Add period if it doesn't end with one
+                  if (!shortSuggestions.endsWith('.')) {
+                    shortSuggestions += '.';
+                  }
+                } else {
+                  shortSuggestions = extracted;
+                }
+              } else {
+                // Fallback: find first complete sentence
+                const sentences = data.suggestions.split(/\.\s+/);
+                if (sentences.length > 0) {
+                  shortSuggestions = sentences.slice(0, 2).join('. ').trim();
+                  if (!shortSuggestions.endsWith('.')) {
+                    shortSuggestions += '.';
+                  }
+                }
+              }
+
+              suggestionsContent.textContent = shortSuggestions;
+              suggestionsContent.classList.remove('ai-suggestions-loading');
+              suggestionsSection.style.display = 'block';
+            } else {
+              console.log('[AI Summary] No suggestions available in response');
+            }
           } else {
+            console.log('[AI Summary] No summary found, hiding block');
             // Hide the block if no summary exists
             summaryBlock.style.display = 'none';
           }
         })
         .catch(error => {
-          console.error('Error loading AI summary:', error);
+          console.error('[AI Summary] Error loading AI summary:', error);
           // Hide the block on error
           summaryBlock.style.display = 'none';
         });

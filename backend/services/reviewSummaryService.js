@@ -369,6 +369,44 @@ ${reviewsText}
 }
 
 /**
+ * Ask Groq to generate suggestions about who the product is best suited for
+ */
+async function callGroqForSuggestions({ productName, averageRating, reviewCount, reviewsText }) {
+  const systemPrompt = `
+You are an AI assistant that analyzes customer reviews and generates concise product recommendations.
+Based on the reviews, describe what type of user or customer this product is best suited for.
+Keep your response to 2-3 sentences maximum.
+Focus on who would benefit most from this product based on the reviews.
+Do NOT use bullet points or markdown formatting.
+Return only plain English text.`;
+
+  const userPrompt = `
+Product name: ${productName}
+Existing rating: ${averageRating.toFixed(1)}/5 from ${reviewCount} review(s).
+
+Customer reviews:
+
+"""
+${reviewsText}
+"""
+
+Based on these reviews, who is this product best suited for?`;
+
+  const completion = await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    temperature: 0.4,
+    max_tokens: 200,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+  });
+
+  const raw = completion.choices?.[0]?.message?.content || "";
+  return cleanAIText(raw);
+}
+
+/**
  * Generate (or refresh) summary for ONE product
  */
 export async function generateReviewSummaryForProduct(productId) {
@@ -397,7 +435,16 @@ export async function generateReviewSummaryForProduct(productId) {
     reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewCount;
 
   const reviewsText = buildReviewsText(reviews);
+
+  // Generate both summary and suggestions
   const summaryText = await callGroqForSummary({
+    productName,
+    averageRating,
+    reviewCount,
+    reviewsText,
+  });
+
+  const suggestionsText = await callGroqForSuggestions({
     productName,
     averageRating,
     reviewCount,
@@ -430,6 +477,7 @@ export async function generateReviewSummaryForProduct(productId) {
       $set: {
         ...dataToSave,
         summary: summaryText,
+        suggestions: suggestionsText,
         updatedAt: new Date(),
       },
       $setOnInsert: {
@@ -446,6 +494,7 @@ export async function generateReviewSummaryForProduct(productId) {
     reviewCount,
     averageRating,
     summary: summaryText,
+    suggestions: suggestionsText,
   };
 }
 

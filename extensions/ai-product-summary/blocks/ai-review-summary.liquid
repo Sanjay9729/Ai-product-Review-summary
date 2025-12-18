@@ -1,71 +1,167 @@
 {% comment %}
-  AI Product Review Summary Block
-  Displays AI-generated product reviews summary
+  AI Review Summary Block
+  Displays AI-generated review summary with suggestions from MongoDB
 {% endcomment %}
 
 <style>
-  .ai-review-block { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 6px; }
-  .ai-review-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #9c6ade; text-transform: uppercase; letter-spacing: 0.5px; }
-  .ai-review-icon { font-size: 18px; }
-  .ai-review-content { color: #4a5568; line-height: 1.6; font-size: 15px; }
-  .ai-review-loading { color: #9c6ade; font-style: italic; }
+  .ai-review-summary-block {
+    margin: 20px 0;
+    padding: 20px;
+  }
+
+  .ai-review-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #9c6ade;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-review-summary-icon {
+    font-size: 18px;
+  }
+
+  .ai-review-summary-content {
+    color: #4a5568;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  .ai-review-summary-loading {
+    color: #9c6ade;
+    font-style: italic;
+  }
+
+  .ai-review-summary-error {
+    display: none;
+  }
+
+  .ai-review-suggestions-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .ai-review-suggestions-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #9c6ade;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-review-suggestions-icon {
+    font-size: 18px;
+  }
+
+  .ai-review-suggestions-content {
+    color: #4a5568;
+    line-height: 1.6;
+    font-size: 15px;
+    white-space: pre-wrap;
+  }
+
+  .ai-review-suggestions-loading {
+    color: #9c6ade;
+    font-style: italic;
+  }
+
   @media (max-width: 768px) {
-    .ai-review-block { padding: 16px; }
-    .ai-review-content { font-size: 14px; }
+    .ai-review-summary-block {
+      padding: 16px;
+    }
+
+    .ai-review-summary-content,
+    .ai-review-suggestions-content {
+      font-size: 14px;
+    }
   }
 </style>
 
-<div class="ai-review-block" id="ai-review-{{ product.id }}" data-product-title="{{ product.title | escape }}">
-  <div class="ai-review-header">
-    <span class="ai-review-icon">⭐</span>
-    <span>AI Reviews</span>
+<div class="ai-review-summary-block" id="ai-review-summary-{{ product.id }}" data-product-title="{{ product.title | escape }}">
+  <div class="ai-review-summary-header">
+    <span class="ai-review-summary-icon">⭐</span>
+    <span>AI Review Summary</span>
   </div>
-  <div class="ai-review-content ai-review-loading">Loading AI review summary...</div>
+  <div class="ai-review-summary-content ai-review-summary-loading">
+    Loading AI review summary...
+  </div>
+  <div class="ai-review-suggestions-section" id="ai-review-suggestions-{{ product.id }}" style="display: none;">
+    <div class="ai-review-suggestions-header">
+      <span class="ai-review-suggestions-icon">💡</span>
+      <span>Suggestions</span>
+    </div>
+    <div class="ai-review-suggestions-content ai-review-suggestions-loading">
+      Loading suggestions...
+    </div>
+  </div>
 </div>
 
 <script>
-(function() {
-  const productTitle = "{{ product.title | escape }}";
-  const reviewBlock = document.getElementById('ai-review-{{ product.id }}');
-  const contentDiv = reviewBlock.querySelector('.ai-review-content');
+  (function() {
+    const productTitle = "{{ product.title | escape }}";
+    const summaryBlock = document.getElementById('ai-review-summary-{{ product.id }}');
+    const contentDiv = summaryBlock.querySelector('.ai-review-summary-content');
+    const suggestionsSection = document.getElementById('ai-review-suggestions-{{ product.id }}');
+    const suggestionsContent = suggestionsSection.querySelector('.ai-review-suggestions-content');
 
-  fetch(`/apps/ai-review-summary?type=review&product=${encodeURIComponent(productTitle)}`)
-    .then(res => res.json())
-    .then(data => {
-      contentDiv.classList.remove('ai-review-loading');
+    console.log('[AI Review Summary] Fetching data for product:', productTitle);
 
-      if(data.success){
-        // If reviews exist
-        if(data.reviews && data.reviews.length > 0){
-          contentDiv.innerHTML = data.reviews.map(r => `<p><strong>${r.user}:</strong> ${r.comment}</p>`).join('');
-        }
-        // If no reviews but summary exists
-        else if(data.summary){
+    // Fetch AI review summary from your app
+    fetch(`/apps/ai-review-summary?type=review&product=${encodeURIComponent(productTitle)}`)
+      .then(response => {
+        console.log('[AI Review Summary] Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('[AI Review Summary] Received data:', data);
+
+        if (data.success && data.summary) {
+          console.log('[AI Review Summary] Summary found:', data.summary);
           contentDiv.textContent = data.summary;
+          contentDiv.classList.remove('ai-review-summary-loading');
+
+          // Display suggestions if available
+          if (data.suggestions) {
+            console.log('[AI Review Summary] Suggestions found:', data.suggestions);
+            // Display suggestions directly without extraction
+            suggestionsContent.textContent = data.suggestions;
+            suggestionsContent.classList.remove('ai-review-suggestions-loading');
+            suggestionsSection.style.display = 'block';
+            console.log('[AI Review Summary] Suggestions section displayed');
+          } else {
+            console.log('[AI Review Summary] No suggestions available in response');
+          }
+        } else {
+          console.log('[AI Review Summary] No summary found, hiding block');
+          // Hide the block if no summary exists
+          summaryBlock.style.display = 'none';
         }
-        // If nothing exists
-        else {
-          contentDiv.textContent = "No reviews available for this product.";
-        }
-      } else {
-        contentDiv.textContent = data.message || "Failed to load reviews.";
-      }
-    })
-    .catch(err => {
-      console.error('Error loading AI reviews:', err);
-      contentDiv.textContent = "Error loading AI reviews.";
-    });
-})();
+      })
+      .catch(error => {
+        console.error('[AI Review Summary] Error loading AI review summary:', error);
+        // Hide the block on error
+        summaryBlock.style.display = 'none';
+      });
+  })();
 </script>
 
 {% schema %}
 {
-  "name": "Product AI Review Summary",
+  "name": "AI Review Summary",
   "target": "section",
   "settings": [
     {
       "type": "paragraph",
-      "content": "Displays AI-generated product reviews summary from your backend. Fallbacks show summary or message if reviews are missing."
+      "content": "Displays AI-generated review summary with suggestions from Judge.me reviews. The summary is automatically fetched from your MongoDB database."
     }
   ]
 }

@@ -222,6 +222,62 @@ export default function AISummaries() {
                       </s-stack>
                     </s-box>
 
+                    {/* AI Suggestions */}
+                    {summary.suggestions && (
+                      <s-box
+                        padding="base"
+                        background="surface-secondary"
+                        borderRadius="base"
+                        borderWidth="base"
+                        style={{ borderColor: '#9c6ade', borderStyle: 'solid' }}
+                      >
+                        <s-stack direction="block" gap="small">
+                          <s-stack direction="inline" gap="small" align="center">
+                            <s-text variant="strong" size="small" style={{ color: '#9c6ade' }}>
+                              💡 Suggestions
+                            </s-text>
+                          </s-stack>
+                          <s-text>
+                            {(() => {
+                              // Extract "best suited for" section
+                              let shortSuggestions = summary.suggestions;
+
+                              // Try to extract the first point about "best suited for"
+                              const bestSuitedMatch = summary.suggestions.match(/\*\*1\.\s*What type of user\/customer[^:]*:\*\*\s*([^*]+)/i);
+                              if (bestSuitedMatch && bestSuitedMatch[1]) {
+                                // Get the text and clean it up
+                                let extracted = bestSuitedMatch[1].trim();
+
+                                // Find the end of the first complete sentence
+                                const sentences = extracted.split(/\.\s+/);
+                                if (sentences.length > 0) {
+                                  // Take first 2 sentences to make it concise but complete
+                                  shortSuggestions = sentences.slice(0, 2).join('. ').trim();
+                                  // Add period if it doesn't end with one
+                                  if (!shortSuggestions.endsWith('.')) {
+                                    shortSuggestions += '.';
+                                  }
+                                } else {
+                                  shortSuggestions = extracted;
+                                }
+                              } else {
+                                // Fallback: find first complete sentence
+                                const sentences = summary.suggestions.split(/\.\s+/);
+                                if (sentences.length > 0) {
+                                  shortSuggestions = sentences.slice(0, 2).join('. ').trim();
+                                  if (!shortSuggestions.endsWith('.')) {
+                                    shortSuggestions += '.';
+                                  }
+                                }
+                              }
+
+                              return shortSuggestions;
+                            })()}
+                          </s-text>
+                        </s-stack>
+                      </s-box>
+                    )}
+
                     {/* Timestamps */}
                     <s-stack direction="block" gap="small">
                       <s-text color="subdued" size="small">

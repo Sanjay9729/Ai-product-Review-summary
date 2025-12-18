@@ -1,4 +1,10 @@
 {
-  "name": "Product AI Summary",
-  "description": "Displays AI-generated product summary from your MongoDB database"
+  "ratings": {
+    "stars": {
+      "label": "Ratings"
+    },
+    "home": {
+      "recommendationText": "Recommended Product!"
+    }
+  }
 }

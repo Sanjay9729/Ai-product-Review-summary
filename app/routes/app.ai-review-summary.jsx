@@ -217,10 +217,32 @@ export default function AIReviewSummary() {
                           </s-text>
                         </s-stack>
                         <s-text>
-                          {summary.aiSummary}
+                          {summary.summary || summary.aiSummary}
                         </s-text>
                       </s-stack>
                     </s-box>
+
+                    {/* AI Suggestions */}
+                    {summary.suggestions && (
+                      <s-box
+                        padding="base"
+                        background="surface-secondary"
+                        borderRadius="base"
+                        borderWidth="base"
+                        style={{ borderColor: '#9c6ade', borderStyle: 'solid' }}
+                      >
+                        <s-stack direction="block" gap="small">
+                          <s-stack direction="inline" gap="small" align="center">
+                            <s-text variant="strong" size="small" style={{ color: '#9c6ade' }}>
+                              💡 Best Suited For
+                            </s-text>
+                          </s-stack>
+                          <s-text>
+                            {summary.suggestions}
+                          </s-text>
+                        </s-stack>
+                      </s-box>
+                    )}
 
                     {/* Timestamps */}
                     <s-stack direction="block" gap="small">

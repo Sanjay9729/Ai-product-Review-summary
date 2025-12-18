@@ -114,6 +114,7 @@ export const loader = async ({ request }) => {
       return new Response(JSON.stringify({
         success: true,
         summary: summaryDoc.summary,
+        suggestions: summaryDoc.suggestions,
         productName: summaryDoc.productName
       }), {
         status: 200,
@@ -137,6 +138,7 @@ export const loader = async ({ request }) => {
       return new Response(JSON.stringify({
         success: true,
         summary: reviewDoc.summary,
+        suggestions: reviewDoc.suggestions,
         productName: reviewDoc.productName,
         reviewCount: reviewDoc.reviewCount || 0,
         averageRating: reviewDoc.averageRating || 0,

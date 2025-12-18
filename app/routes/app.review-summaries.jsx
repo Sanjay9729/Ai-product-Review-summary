@@ -630,9 +630,40 @@ export default function ReviewSummariesPage() {
                       padding="base"
                       background="surface-secondary"
                       borderRadius="base"
+                      borderWidth="base"
+                      style={{ borderColor: '#9c6ade', borderStyle: 'solid' }}
                     >
-                      <s-text>{extractSummaryText(item.summary)}</s-text>
+                      <s-stack direction="block" gap="small">
+                        <s-stack direction="inline" gap="small" align="center">
+                          <s-text variant="strong" size="small" style={{ color: '#9c6ade' }}>
+                            ✨ AI Summary
+                          </s-text>
+                        </s-stack>
+                        <s-text>{extractSummaryText(item.summary)}</s-text>
+                      </s-stack>
                     </s-box>
+
+                    {/* AI Suggestions */}
+                    {item.suggestions && (
+                      <s-box
+                        padding="base"
+                        background="surface-secondary"
+                        borderRadius="base"
+                        borderWidth="base"
+                        style={{ borderColor: '#9c6ade', borderStyle: 'solid' }}
+                      >
+                        <s-stack direction="block" gap="small">
+                          <s-stack direction="inline" gap="small" align="center">
+                            <s-text variant="strong" size="small" style={{ color: '#9c6ade' }}>
+                              💡 Best Suited For
+                            </s-text>
+                          </s-stack>
+                          <s-text>
+                            {item.suggestions}
+                          </s-text>
+                        </s-stack>
+                      </s-box>
+                    )}
 
                     {/* Meta info */}
                     <s-stack direction="block" gap="small">
